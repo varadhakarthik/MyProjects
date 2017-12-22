@@ -1,0 +1,20 @@
+DELIMITER $$
+CREATE DEFINER=`tylercst`@`localhost` PROCEDURE `sp_deletedNew_ItemList`()
+BEGIN
+
+-- DELETED ITEMS QUERY
+    CREATE TABLE IF NOT EXISTS deletedItems
+    SELECT CURRENT_DATE, P.* from  tylercst_History.MASTER_110917 P
+    LEFT OUTER JOIN tylercst_History.MASTER_121417 M
+	ON M.Item = P.Item
+    WHERE M.Item IS NULL;
+    
+-- NEW ITEMS QUERY
+    CREATE TABLE IF NOT EXISTS new_items
+    SELECT CURRENT_DATE, M.* FROM tylercst_History.MASTER_121417 M
+    LEFT OUTER JOIN tylercst_History.MASTER_110917 P
+	ON P.Item = M.Item
+    WHERE P.Item IS NULL;
+    
+    END$$
+DELIMITER ;

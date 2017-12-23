@@ -1,0 +1,50 @@
+--------------Final Price Plan Queries-----------------
+
+SELECT M.Item_num, M.Item_Ref, M.Description, M.Box_UPC,M.Item_Cost, M.Item_Price, M.Subcategory_Code,M.Subcategory,
+(CASE 
+WHEN M.Subcategory = '' AND M.Category_Code = 18
+ THEN
+ROUND((0.0178*M.Item_Cost)+M.Item_Cost,2)
+WHEN M.Category_Code = 23 AND M.Subcategory_Code = ''
+ THEN
+ROUND((0.0295*M.Item_Cost)+M.Item_Cost,2)
+WHEN M.Category_Code IN ('04' OR '05' OR '07')
+ THEN
+ M.Item_Cost
+WHEN M.Category_Code = 09
+ THEN 
+ ROUND((M.TCS_PERCENTAGE-(0.5))*M.Item_Cost/(100)+M.Item_Cost,2)
+ELSE
+M.Item_Cost
+END) AS IN_FinalPrice_Plan,
+(CASE 
+WHEN M.Subcategory = '' AND M.Category_Code = 18
+ THEN
+ ROUND((0.016*M.Item_Cost)+M.Item_Cost,2)
+WHEN M.Category_Code = 23 AND M.Subcategory_Code = ''
+THEN
+ROUND((0.0230*M.Item_Cost)+M.Item_Cost,2)
+WHEN M.Category_Code IN ('04' OR '05' OR '07')
+ THEN
+ ROUND((M.TCS_PERCENTAGE-(2))*M.Item_Cost/(100)+M.Item_Cost,2)
+WHEN M.Category_Code = 09
+ THEN
+ ROUND((M.TCS_PERCENTAGE-(0.5))*M.Item_Cost/(100)+M.Item_Cost,2)
+ELSE
+ M.Item_Cost
+END) AS M_FinalPrice_Plan,
+(CASE 
+WHEN M.Subcategory = '' AND (M.Category_Code = 18 OR M.Category_Code = 23)
+ THEN
+ M.s_price_plan
+WHEN M.Category_Code IN ('04' OR '05' OR '07' OR '09')
+ THEN
+ M.s_price_plan
+ELSE
+ M.Item_Cost
+END) AS S_FinalPrice_Plan
+FROM MasterList_withPricePlans1005 M
+WHERE M.Category_Code = 04 OR M.Category_Code = 05 OR M.Category_Code = 07 OR 
+M.Category_Code = 09 OR M.Category_Code = 18 OR M.Category_Code =23
+
+--------------------------

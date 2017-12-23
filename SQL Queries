@@ -1,4 +1,4 @@
---------------Final Price Plan Queries-----------------
+--------------Price Plan Queries-----------------
 
 SELECT M.Item_num, M.Item_Ref, M.Description, M.Box_UPC,M.Item_Cost, M.Item_Price, M.Subcategory_Code,M.Subcategory,
 (CASE 
@@ -48,3 +48,53 @@ WHERE M.Category_Code = 04 OR M.Category_Code = 05 OR M.Category_Code = 07 OR
 M.Category_Code = 09 OR M.Category_Code = 18 OR M.Category_Code =23
 
 --------------------------
+
+
+-------Finding lowest Cost vendors--------
+
+/*----LOWEST VENDORS-----*/
+
+SELECT R.ITEM,R.ItemDesc,R.Category,R.VendorName,R.Cost FROM Receiving_LowCost_VendorItems R 
+INNER JOIN 
+(SELECT Item,MIN(COST) MINCOST FROM Receiving_LowCost_VendorItems
+  GROUP BY ITEM) as L
+  ON R.Item = L.Item and 
+  R.COST = L.MINCOST
+  GROUP BY R.Item
+ORDER BY R.Category ASC
+
+------------------------------------------------------------------------
+
+-------Trimming out last two chars(Space and '*' from UPC)--------------
+
+SELECT 
+    M.Item,M.BoxUPC,
+     SUBSTRING(BoxUPC FROM 1 FOR CHAR_LENGTH(M.BoxUPC) - 2) AS Boxtrim,
+     M.UnitUPC,
+     SUBSTRING(UnitUPC FROM 1 FOR CHAR_LENGTH(M.UnitUPC) - 2) as UnitTrim
+FROM dbo.tylercst_History.MASTER_121417 M
+
+------------------------------------------------------------------------
+
+/*-------Converting UPCa format barcode to GTIN 13 format and find out check digit--------------*/
+
+SELECT 
+SUBSTRING((10 - ((((
+SUBSTRING(BoxUPC FROM 2 FOR 1) +
+SUBSTRING(BoxUPC FROM 4 FOR 1) +
+SUBSTRING(BoxUPC FROM 6 FOR 1) +
+SUBSTRING(BoxUPC FROM 8 FOR 1) +
+SUBSTRING(BoxUPC FROM 10 FOR 1) +
+SUBSTRING(BoxUPC FROM 12 FOR 1)  
+)*3) + (
+SUBSTRING(BoxUPC FROM 1 FOR 1) +
+SUBSTRING(BoxUPC FROM 3 FOR 1) +
+SUBSTRING(BoxUPC FROM 5 FOR 1) +
+SUBSTRING(BoxUPC FROM 7 FOR 1) +
+SUBSTRING(BoxUPC FROM 9 FOR 1) +
+SUBSTRING(BoxUPC FROM 11 FOR 1)
+)) MOD 10)) 
+FROM -1 FOR 1) 
+FROM MASTER_121417
+
+------------------------------------------------------

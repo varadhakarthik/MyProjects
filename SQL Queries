@@ -98,3 +98,17 @@ FROM -1 FOR 1)
 FROM MASTER_121417
 
 ------------------------------------------------------
+
+/*---------Finding mismatch cost items----------*/
+
+SELECT T.Item,T.Desc, T.Cost, T.Ext, H.EXTPRC, (H.EXTPRC/(H.QTYS))HAR_COST,H.QTYS,T.OrderedQty FROM HAR H 
+INNER JOIN TPS T 
+ON H.BOXUPC = T.BoxUPC or H.ITM = T.itemRef OR H.RETUPC = T.UnitUPC
+WHERE T.Ext <> H.EXTPRC OR H.QTYS <> T.OrderedQty
+
+SELECT H.* FROM HAR H
+LEFT OUTER JOIN TPS T
+ON H.ITM = T.ItemRef OR H.BOXUPC = T.BoxUPC OR H.RETUPC = T.UnitUPC
+WHERE (T.ItemRef OR T.BoxUPC OR T.UnitUPC) IS NULL
+
+--------------------------------------------------------

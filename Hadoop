@@ -1,0 +1,73 @@
+1)	Data Ingest
+
+1.1)	Import data from a MySQL database into HDFS using Sqoop
+From vm machine 
+> login
+> su root
+> “enter password”
+> mysql -u root -p
+> enter password
+> show databases;
+
+11/15/2017
+
+HDFS Path: /user/cloudera
+
+Step1: Create a directory under hdfs directory i.e., /user/cloudera
+>Hadoop fs -mkdir /user/cloudera/sqoop_import
+Step2: Now connect to mysql databases using the sqoop--
+>sqoop list-databases \ *this makes the linux to start entering       commands in next line *
+>--connect “jdbc: mysql://quickstart.cloudera:3306” \
+>--username retail_dba \
+>--password cloudera
+Step3: Now check the tables under mysql server
+>sqoop list-tables \ *this makes the linux to start entering       commands in next line *
+>--connect “jdbc: mysql://quickstart.cloudera:3306/retail_db” \
+>--username retail_dba \
+>--password cloudera
+Step4: Check whether we have privileges to access the tables or not?
+> sqoop eval \ *this makes the linux to start entering       commands in next line *
+>--connect “jdbc: mysql://quickstart.cloudera:3306/retail_db” \
+>--username retail_dba \
+>--password cloudera \
+>--query “select * from department”
+**If this command returns then we have privileges to access the records**Using eval command we can do any sql operations**
+Step5: Real import of tables from mysql to hdfs using sqoop starts here:
+>sqoop import-all-tables \
+>-m 12  *** for diving the mappers into 12 (default is 4)using this we can transfer the data parallely but be careful while selecting the mappers***
+>>--connect “jdbc: mysql://quickstart.cloudera:3306/retail_db” \
+>--username retail_dba \
+>--password cloudera \
+>--warehouse-dir=/user/cloudera/sqoop_import   ***hdfs target directory***
+Step6: Now validate the data in HDFS whether the data is transferred or not
+>Hadoop fs -ls /user/cloudera/sqoop_import (H is small)
+>hadoop fs -ls /user/cloudera/sqoop_import/departments
+>hadoop fs -tail /user/cloudera/sqoop_import/departments/**jobname**
+
+** we can see here table data by “,” since transfers the data in text form default**
+
+>hadoop fs -cat /user/cloudera/sqoop_import/departments/**jobname** | wc -l  (displaying the records count)
+
+1.2)	Importing all tables through SQOOP to HIVE environment from MySQL in Snappy codec compression format:
+
+Hive Path: /user/hive/warehouse
+
+Command: sqoop import-all-tables \
+>--m 1 \
+>--connect “jdbc:mysql://quickstart.cloudera:3306/retail_db” \
+>--username retail_dba \
+>--password cloudera \
+>--hive-import \
+>--hive-overwrite \
+>--create-hive-tables \
+>--hive-database sqoop_import (**by default comes under warehouse folder**)
+>--compress \
+>--compression-codec org.apache.hadoop.io.compression.SnappyCodec \
+>--outdir java_files
+
+**In hive, we can use dfs -ls instead of “hadoop fs”…**
+
+
+
+
+IN PROGRESS……
